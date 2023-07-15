@@ -1,11 +1,13 @@
-import { Button, TextField } from "@mui/material";
+import { Alert, AlertTitle, Button, TextField } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import Test from "../../Test";
 import { Link } from "react-router-dom";
+import { useUserAuth } from "../../context/UserAuthContext";
 
 export default function Singup() {
   const [view, setView] = useState(false);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
+  // const navigate = useNavigate();
 
   useEffect(() => {
     const handleResize = () => {
@@ -17,38 +19,88 @@ export default function Singup() {
 
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  const [name, setName] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmP, setConfirmP] = useState("");
+  const [error, setError] = useState("");
+
+  const { signUp } = useUserAuth();
+
+  const handleSignup = async (e) => {
+    e.preventDefault();
+    setError("");
+    // if (name !== "" || password !== "" || confirmP !== "") {
+      if (password === confirmP) {
+        try {
+          await signUp(name, password);
+        } catch (err) {
+          setError(err.message);
+        }
+        setName("");
+        setPassword("");
+        setConfirmP("");
+      } else {
+        alert("password doesn't match");
+      }
+    // } else {
+    //   alert("please enter fields");
+    // }
+  };
   return (
     <>
       <div className="grid grid-flow-col grid-cols-1 lg:grid-cols-2  h-[100vh] w-full">
-        {!isSmallScreen && <div className="flex items-center justify-center ">
-          <Test />
-        </div>}
+        {!isSmallScreen && (
+          <div className="flex items-center justify-center ">
+            <Test />
+          </div>
+        )}
         <div className="flex items-center justify-center ">
           <div className="z-1000  rounded-lg pb-11 bg-slate-100">
-            <div className="flex flex-col gap-2 items-center justify-center p-6  z-1">
-              <p className="text-2xl font-bold mb-5 text-black">
-                CREATE AN ACCOUNT
-              </p>
+            <form className="flex flex-col gap-2 items-center justify-center p-6  z-1">
+              <p className="text-2xl font-bold mb-5 text-black">REGISTER</p>
+              {error && (
+                <Alert severity="error">
+                  <AlertTitle>Error</AlertTitle>
+                  {error}
+                </Alert>
+              )}
+              <p>Create an account</p>
               <TextField
-                id="outlined-basic"
-                label="Fullname"
-                placeholder="Enter your fullname"
+                type="email"
+                label="Email"
+                placeholder="Enter your email"
                 variant="outlined"
+                value={name}
                 sx={{ width: "18rem" }}
+                required
+                onChange={(e) => {
+                  setName(e.target.value);
+                }}
               />
               <TextField
-                id="outlined-basic"
+                type="password"
                 label="password"
                 placeholder="Enter your password"
                 variant="outlined"
+                value={password}
                 sx={{ width: "18rem" }}
+                required
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                }}
               />
               <TextField
-                id="outlined-basic"
-                label="confirm *"
+                type="password"
+                label="confirm"
+                value={confirmP}
                 placeholder="Confirm password"
                 variant="outlined"
                 sx={{ width: "18rem" }}
+                required
+                onChange={(e) => {
+                  setConfirmP(e.target.value);
+                }}
               />
               <Button
                 variant="outlined"
@@ -63,34 +115,21 @@ export default function Singup() {
                     border: "3px solid black",
                   },
                   marginTop: "10px",
+                }}
+                onClick={(e) => {
+                  handleSignup(e);
                 }}
               >
                 SignUp
               </Button>
-              <Button
-                variant="outlined"
-                sx={{
-                  backgroundColor: "pink",
-                  color: "white",
-                  width: "100%",
-                  border: "3px solid black",
-                  "&:hover": {
-                    backgroundColor: "wihte",
-                    color: "black",
-                    border: "3px solid black",
-                  },
-                  marginTop: "10px",
-                }}
-              >
-                Signup with Google
-              </Button>
+
               <div>
-                <span className="text-md">already have account?</span>
-                <Link to="/login" className=" text-blue-400 pl-1 text-sm">
+                <span className="text-md">already have an account?</span>
+                <Link to="/" className=" text-blue-400 pl-1 text-sm">
                   login
                 </Link>
               </div>
-              <p className="text-gray-800 mt-4">
+              <div className="text-gray-800 mt-4">
                 <span className="font-bold flex items-center justify-center">
                   Acceptance of Terms:
                   {!view && (
@@ -111,8 +150,8 @@ export default function Singup() {
                     <br /> terms and conditions.
                   </p>
                 )}
-              </p>
-            </div>
+              </div>
+            </form>
           </div>
         </div>
       </div>
